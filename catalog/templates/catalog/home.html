@@ -24,21 +24,15 @@
 <div class="container">
     <div class="row text-center">
         {% for product in products %}
-        <div class="col-3">
-            <div class="card mb-4 box-shadow">
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card mb-4 box-shadow h-100">
                 <div class="card-header">
                     <h4 class="my-0 font-weight-normal">{{ product.name }}</h4>
                 </div>
                 <div class="card-body">
                     <h1 class="card-title pricing-card-title">$ {{ product.price }}</h1>
-                    <ul class="list-unstyled mt-3 mb-4 text-start m-3">
-                        {% for item in product.description|slice:":4" %}
-                            <li>- {{ item }}</li>
-                        {% empty %}
-                            <li>{{ product.description }}</li>
-                        {% endfor %}
-                    </ul>
-                    <button type="button" class="btn btn-lg btn-block btn-outline-primary">Купить</button>
+                    <p class="card-text mt-3">{{ product.description }}</p>
+                    <button type="button" class="btn btn-lg btn-block btn-outline-primary mt-3">Купить</button>
                 </div>
             </div>
         </div>
