@@ -33,27 +33,36 @@ SkyStore - это веб-приложение на Django для продажи 
 
 ## 📁 Структура проекта
 
+```
 Sky_Store/
-├── 📂 catalog/
-│ ├── 📂 templates/
-│ │ └── 📂 catalog/
-│ │ ├── home.html
-│ │ ├── contacts.html
-│ │ ├── 404.html
-│ │ └── 500.html
-│ ├── 📄 urls.py
-│ ├── 📄 views.py
-│ └── 📄 models.py
 │
-├── 📂 sky_store/
-│ ├── settings.py
-│ ├── urls.py
-│ └── wsgi.py
+├──📄 manage.py
+├──📄 requirements.txt
+├──📄 .gitignore
+├──📄 README.md
 │
-├── 📄 manage.py
-├── 📄 requirements.txt
-├── 📄 .gitignore
-└── 📄 README.md
+├──📂 catalog/
+│   ├──📄 views.py
+│   ├──📄 urls.py
+│   ├──📄 models.py
+│   │
+│   └── 📂templates/
+│       └── 📂catalog/
+│           ├── home.html
+│           ├── contacts.html
+│           ├── 404.html
+│           └── 500.html
+│
+├──📂 sky_store/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+│
+└──📂 venv/
+    ├── Scripts/
+    └── Lib/
+```
 
 ## 📦 Установка и запуск
 
