@@ -30,3 +30,6 @@ Thumbs.db
 
 media/
 static/
+
+media/
+*.sqlite3

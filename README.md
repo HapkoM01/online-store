@@ -11,13 +11,20 @@ SkyStore - это веб-приложение на Django для продажи 
 - Практика работы с шаблонами и Bootstrap
 - Реализация обработки форм и POST-запросов
 - Создание кастомных страниц ошибок
+- Работа с моделями и базами данных (PostgreSQL)
+- Настройка административной панели
+- Работа с фикстурами и кастомными командами
 
 ## 🛠 Технологии
 
-- Python 3.8+
-- Django 4.2
-- Bootstrap 5
-- SQLite (для разработки)
+| Технология | Версия | Назначение |
+|------------|--------|------------|
+| Python | 3.8+ | Язык программирования |
+| Django | 4.2 | Веб-фреймворк |
+| PostgreSQL | 15+ | База данных |
+| Bootstrap | 5.3 | CSS-фреймворк |
+| Pillow | 12.2 | Работа с изображениями |
+| IPython | 9.13 | Интерактивная оболочка |
 
 ## 🚀 Функциональность
 
@@ -31,37 +38,58 @@ SkyStore - это веб-приложение на Django для продажи 
 
 ✅ Защита от CSRF атак
 
+✅ Кастомные страницы ошибок 404 и 500 
+
+✅ Модели `Category` и `Product`
+
+✅ Подключение PostgreSQL
+
+✅ Админ-панель с настройкой отображения
+
+✅ Фикстуры для экспорта/импорта данных
+
+✅ Кастомная команда `load_test_data`
+
 ## 📁 Структура проекта
 
 ```
 Sky_Store/
 │
-├──📄 manage.py
-├──📄 requirements.txt
-├──📄 .gitignore
-├──📄 README.md
+├── 📄 manage.py
+├── 📄 requirements.txt
+├── 📄 .gitignore
+├── 📄 .env.example
+├── 📄 README.md
 │
-├──📂 catalog/
-│   ├──📄 views.py
-│   ├──📄 urls.py
-│   ├──📄 models.py
-│   │
-│   └── 📂templates/
-│       └── 📂catalog/
-│           ├── home.html
-│           ├── contacts.html
-│           ├── 404.html
-│           └── 500.html
+├── 📂 catalog/ 
+│ ├── 📄 admin.py # 
+│ ├── 📄 models.py 
+│ ├── 📄 views.py 
+│ ├── 📄 urls.py 
+│ ├── 📄 tests.py 
+│ │
+│ ├── 📂 fixtures/ 
+│ │    ├── 📄 categories.json
+│ │    └── 📄 products.json
+│ │
+│ ├── 📂 management/ 
+│ │    └── 📂 commands/
+│ │         └── 📄 load_test_data.py
+│ │
+│ └── 📂 templates/ 
+│ └── 📂 catalog/
+│      ├── 📄 home.html
+│      ├── 📄 contacts.html
+│      ├── 📄 404.html
+│      └── 📄 500.html
 │
-├──📂 sky_store/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
+├── 📂 sky_store/ 
+│   ├── 📄 settings.py
+│   ├── 📄 urls.py
+│   ├── 📄 wsgi.py
+│   └── 📄 asgi.py
 │
-└──📂 venv/
-    ├── Scripts/
-    └── Lib/
+└── 📂 venv/ 
 ```
 
 ## 📦 Установка и запуск
@@ -96,25 +124,50 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Применение миграций
+### 4. Настройка переменных окружения
+
+```
+Создайте файл .env в корне проекта:
+
+# PostgreSQL настройки
+DB_NAME=sky_store_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+
+# Django настройки
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+```
+
+### 5. Создание базы данных PostgreSQL
+
+```
+CREATE DATABASE sky_store_db;
+CREATE USER sky_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE sky_store_db TO sky_user;
+```
+
+### 6. Применение миграций
 
 ```
 python manage.py migrate
 ```
 
-### 5. Запуск сервера
+### 7. Запуск сервера
 
 ```
 python manage.py runserver
 ```
 
-### 6. Открыть в браузере
+### 8. Открыть в браузере
 
 ```
 http://127.0.0.1:8000
 ```
 
-### 10. Запуск и проверка
+### 9. Запуск и проверка
 
 ```
 👉🏻 Выполните миграции
