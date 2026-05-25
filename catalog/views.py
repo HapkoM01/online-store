@@ -1,38 +1,25 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
-from django.conf import settings
+from catalog.models import Category, Product
 
 
 def home(request):
     """Контроллер для главной страницы"""
+    products = Product.objects.all()  # Получаем все продукты
     context = {
         'title': 'Skystore - Магазин плагинов и кода',
-        'products': [
-            {
-                'name': 'Удобный сервис рассылок',
-                'price': 140,
-                'description': 'Неограниченная лицензия, поддержка, установка на сервер, получение обновлений'
-            },
-            {
-                'name': 'Телеграм бот для магазина',
-                'price': 200,
-                'description': 'Автоматизация продаж, уведомления, поддержка клиентов'
-            },
-            {
-                'name': 'Полезные утилиты для разработки',
-                'price': 99,
-                'description': 'Набор инструментов для ускорения разработки'
-            },
-            {
-                'name': 'Веб-приложение на Django',
-                'price': 350,
-                'description': 'Готовый шаблон для интернет-магазина'
-            }
-        ]
+        'products': products
     }
     return render(request, 'catalog/home.html', context)
+
+
+def product_detail(request, pk):
+    """Контроллер для страницы подробной информации о товаре"""
+    product = get_object_or_404(Product, pk=pk)
+    context = {
+        'title': product.name,
+        'product': product
+    }
+    return render(request, 'catalog/product_detail.html', context)
 
 
 def contacts(request):
@@ -42,21 +29,11 @@ def contacts(request):
         phone = request.POST.get('phone')
         message = request.POST.get('message')
 
-        # Выводим в консоль (для проверки)
         print(f"\n=== Получены данные из формы контактов ===")
         print(f"Имя: {name}")
         print(f"Телефон: {phone}")
         print(f"Сообщение: {message}")
         print(f"========================================\n")
-
-        # Здесь можно добавить отправку email
-        # send_mail(
-        #     f'Сообщение от {name}',
-        #     f'Телефон: {phone}\nСообщение: {message}',
-        #     settings.DEFAULT_FROM_EMAIL,
-        #     ['admin@example.com'],
-        #     fail_silently=False,
-        # )
 
         context = {
             'success': True,
@@ -66,9 +43,11 @@ def contacts(request):
 
     return render(request, 'catalog/contacts.html')
 
+
 def custom_404(request, exception):
     """Кастомная страница 404"""
     return render(request, 'catalog/404.html', status=404)
+
 
 def custom_500(request):
     """Кастомная страница 500"""

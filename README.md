@@ -14,6 +14,7 @@ SkyStore - это веб-приложение на Django для продажи 
 - Работа с моделями и базами данных (PostgreSQL)
 - Настройка административной панели
 - Работа с фикстурами и кастомными командами
+- Создание динамических страниц товаров
 
 ## 🛠 Технологии
 
@@ -62,7 +63,7 @@ Sky_Store/
 ├── 📄 README.md
 │
 ├── 📂 catalog/ 
-│ ├── 📄 admin.py # 
+│ ├── 📄 admin.py 
 │ ├── 📄 models.py 
 │ ├── 📄 views.py 
 │ ├── 📄 urls.py 
@@ -81,8 +82,11 @@ Sky_Store/
 │      ├── 📄 home.html
 │      ├── 📄 contacts.html
 │      ├── 📄 404.html
-│      └── 📄 500.html
-│
+│      ├── 📄 500.html
+│      ├── 📄 base.html
+│      ├── 📄 product_detail.html
+│      └── 📂 includes/  
+│           └── 📄 header.html
 ├── 📂 sky_store/ 
 │   ├── 📄 settings.py
 │   ├── 📄 urls.py
