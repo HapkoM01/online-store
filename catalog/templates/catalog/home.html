@@ -7,9 +7,22 @@
 <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">Skystore</h1>
     <p class="lead">Передовые технологии 2026 года уже здесь</p>
+    <a href="{% url 'catalog:product_create' %}" class="btn btn-success btn-lg mt-3">
+        ➕ Добавить новый товар
+    </a>
 </div>
 
 <div class="container">
+    <!-- Сообщения -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <div class="row text-center">
         {% for product in products %}
         <div class="col-md-3 col-sm-6 mb-4">
@@ -19,14 +32,21 @@
                 </div>
                 <div class="card-body">
                     <h1 class="card-title pricing-card-title">$ {{ product.price }}</h1>
-                    <p class="card-text mt-3">{{ product.description|truncatechars:100 }}</p>
-                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-lg btn-block btn-outline-primary mt-3">Подробнее</a>
+                    <p class="card-text mt-3 text-secondary">{{ product.description|truncatechars:100 }}</p>
+                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-lg btn-block btn-outline-primary mt-3">
+                        Подробнее
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
-            <p class="text-center">Товары временно отсутствуют</p>
+            <div class="alert alert-info text-center">
+                <p class="mb-0">📭 Товары временно отсутствуют.</p>
+                <a href="{% url 'catalog:product_create' %}" class="btn btn-primary mt-3">
+                    Добавить первый товар
+                </a>
+            </div>
         </div>
         {% endfor %}
     </div>
