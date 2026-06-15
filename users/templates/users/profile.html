@@ -1,10 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'catalog/base.html' %}
+{% load static %}
+
+{% block title %}Профиль - SkyStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">👤 Мой профиль</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Сообщения -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Аватар -->
+                        {% if user.avatar %}
+                        <div class="text-center mb-4">
+                            <img src="{{ user.avatar.url }}" alt="Аватар" style="width: 150px; height: 150px; object-fit: cover;" class="rounded-circle border">
+                        </div>
+                        {% endif %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                {{ field.label }}
+                            </label>
+                            
+                            {{ field }}
+                            
+                            {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {% for error in field.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'catalog:home' %}" class="btn btn-outline-secondary">
+                                ← На главную
+                            </a>
+                            <div>
+                                <a href="{% url 'users:logout' %}" class="btn btn-danger me-2">
+                                    🚪 Выйти
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    💾 Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
@@ -9,7 +10,7 @@ from catalog.forms import ProductForm
 
 
 class HomeView(ListView):
-    """Контроллер для главной страницы (список товаров)"""
+    """Контроллер для главной страницы (доступен всем)"""
     model = Product
     template_name = 'catalog/home.html'
     context_object_name = 'products'
@@ -19,41 +20,41 @@ class HomeView(ListView):
     }
 
     def get_queryset(self):
-        """Получаем все продукты"""
         return Product.objects.all()
 
 
 class ProductDetailView(DetailView):
-    """Контроллер для страницы товара"""
+    """Детальная страница товара (доступна всем)"""
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
 
-class ProductCreateView(CreateView):
-    """Контроллер для создания продукта"""
+# CRUD для продуктов - доступны только авторизованным пользователям
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    """Создание продукта (только для авторизованных)"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
+    login_url = '/users/login/'
 
     def form_valid(self, form):
-        """Дополнительные действия при успешной валидации"""
         messages.success(self.request, f'Товар "{form.instance.name}" успешно создан!')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        """Обработка неверной формы"""
         messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
         return super().form_invalid(form)
 
 
-class ProductUpdateView(UpdateView):
-    """Контроллер для редактирования продукта"""
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    """Редактирование продукта (только для авторизованных)"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
+    login_url = '/users/login/'
 
     def form_valid(self, form):
         messages.success(self.request, f'Товар "{form.instance.name}" успешно обновлен!')
@@ -64,11 +65,12 @@ class ProductUpdateView(UpdateView):
         return super().form_invalid(form)
 
 
-class ProductDeleteView(DeleteView):
-    """Контроллер для удаления продукта"""
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    """Удаление продукта (только для авторизованных)"""
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
+    login_url = '/users/login/'
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, f'Товар "{self.get_object().name}" успешно удален!')
@@ -76,7 +78,7 @@ class ProductDeleteView(DeleteView):
 
 
 class ContactsView(TemplateView):
-    """Контроллер для страницы контактов"""
+    """Страница контактов (доступна всем)"""
     template_name = 'catalog/contacts.html'
 
     def get_context_data(self, **kwargs):
@@ -85,7 +87,6 @@ class ContactsView(TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        """Обработка POST-запроса из формы"""
         name = request.POST.get('name')
         phone = request.POST.get('phone')
         message = request.POST.get('message')
@@ -104,10 +105,8 @@ class ContactsView(TemplateView):
 
 
 class Custom404View(TemplateView):
-    """Кастомная страница 404"""
     template_name = 'catalog/404.html'
 
 
 class Custom500View(TemplateView):
-    """Кастомная страница 500"""
     template_name = 'catalog/500.html'

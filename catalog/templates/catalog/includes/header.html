@@ -7,4 +7,24 @@
         <a class="p-2 btn btn-outline-primary" href="{% url 'blog:blog_list' %}">📝 Блог</a>
         <a class="p-2 btn btn-outline-primary" href="{% url 'catalog:contacts' %}">📞 Контакты</a>
     </nav>
+
+    <!-- Блок аутентификации -->
+    <div class="ms-auto">
+        {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    👤 {{ user.first_name|default:user.email }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'users:profile' %}">👤 Мой профиль</a></li>
+                    <li><a class="dropdown-item" href="{% url 'catalog:product_create' %}">➕ Добавить товар</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}">🚪 Выйти</a></li>
+                </ul>
+            </div>
+        {% else %}
+            <a href="{% url 'users:login' %}" class="btn btn-outline-success me-2">🔐 Войти</a>
+            <a href="{% url 'users:register' %}" class="btn btn-success">📝 Регистрация</a>
+        {% endif %}
+    </div>
 </div>
