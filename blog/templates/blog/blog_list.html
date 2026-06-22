@@ -5,40 +5,114 @@
 
 {% block content %}
 <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>📝 Блог SkyStore</h1>
-        <a href="{% url 'blog:blog_create' %}" class="btn btn-primary">
-            ✍️ Создать новую запись
-        </a>
+    <!-- Заголовок -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">📝 Блог SkyStore</h1>
+        <p class="lead text-muted">Последние новости и обзоры из мира технологий</p>
+
+        {% if perms.blog.add_blogpost %}
+            <a href="{% url 'blog:blog_create' %}" class="btn btn-primary btn-lg mt-3">
+                ✍️ Создать новую запись
+            </a>
+        {% endif %}
     </div>
-    
+
     <div class="row">
         {% for post in posts %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <!-- Превью -->
                 {% if post.preview %}
-                <img src="{{ post.preview.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                    <img src="{{ post.preview.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 220px; object-fit: cover;">
                 {% else %}
-                <div class="card-img-top bg-light text-center py-5">
-                    <span class="text-muted">📷 Нет изображения</span>
-                </div>
+                    <div class="card-img-top bg-gradient-primary text-white text-center py-5" style="height: 220px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 48px;">📰</span>
+                    </div>
                 {% endif %}
+
                 <div class="card-body">
-                    <h5 class="card-title">{{ post.title }}</h5>
-                    <p class="card-text text-muted small">
-                        {{ post.created_at|date:"d.m.Y" }} • 👁️ {{ post.views_count }} просмотров
+                    <h5 class="card-title fw-bold">{{ post.title|truncatechars:60 }}</h5>
+
+                    <!-- Мета-информация -->
+                    <p class="card-text text-muted small mb-2">
+                        📅 {{ post.created_at|date:"d.m.Y" }} • 👁️ {{ post.views_count }} просмотров
                     </p>
-                    <p class="card-text">{{ post.content|truncatechars:150 }}</p>
-                    <a href="{% url 'blog:blog_detail' post.pk %}" class="btn btn-outline-primary">Читать далее →</a>
+
+                    <p class="card-text text-secondary">{{ post.content|truncatechars:120 }}</p>
+
+                    <a href="{% url 'blog:blog_detail' post.pk %}" class="btn btn-outline-primary stretched-link">
+                        Читать далее →
+                    </a>
                 </div>
+
+                <!-- Кнопки управления для контент-менеджеров -->
+                {% if perms.blog.change_blogpost or perms.blog.delete_blogpost %}
+                    <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                        <div class="d-flex gap-2">
+                            {% if perms.blog.change_blogpost %}
+                                <a href="{% url 'blog:blog_edit' post.pk %}" class="btn btn-sm btn-warning">
+                                    ✏️ Редактировать
+                                </a>
+                            {% endif %}
+                            {% if perms.blog.delete_blogpost %}
+                                <a href="{% url 'blog:blog_delete' post.pk %}" class="btn btn-sm btn-danger">
+                                    🗑️ Удалить
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <p class="lead">📭 Пока нет ни одной записи в блоге.</p>
-            <a href="{% url 'blog:blog_create' %}" class="btn btn-primary">Создать первую запись</a>
+            <div class="alert alert-info">
+                <p class="mb-0">📭 Пока нет ни одной записи в блоге.</p>
+                {% if perms.blog.add_blogpost %}
+                    <a href="{% url 'blog:blog_create' %}" class="btn btn-primary mt-3">
+                        Создать первую запись
+                    </a>
+                {% endif %}
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- Стили -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+    }
+
+    .hover-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .stretched-link::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        content: "";
+    }
+
+    .hover-card .card-footer {
+        position: relative;
+        z-index: 2;
+    }
+</style>
 {% endblock %}
