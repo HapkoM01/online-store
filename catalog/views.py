@@ -1,17 +1,20 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
-from django.core.mail import send_mail
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from catalog.models import Product, Category
 from catalog.forms import ProductForm
+from catalog.services import ProductService
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class HomeView(ListView):
-    """Главная страница - показываем только опубликованные продукты"""
+    """Главная страница с кешированием"""
     model = Product
     template_name = 'catalog/home.html'
     context_object_name = 'products'
@@ -21,19 +24,43 @@ class HomeView(ListView):
     }
 
     def get_queryset(self):
-        """Показываем только опубликованные продукты"""
-        return Product.objects.filter(is_published=True)
+        """Получаем все опубликованные продукты с кешированием"""
+        return ProductService.get_all_products()
 
 
 class ProductDetailView(DetailView):
-    """Детальная страница товара"""
+    """Детальная страница товара с кешированием"""
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    def get_object(self, queryset=None):
+        """Получаем продукт через сервис с кешированием"""
+        product_id = self.kwargs.get('pk')
+        return ProductService.get_product_detail(product_id)
+
+
+class CategoryProductsView(ListView):
+    """Представление для отображения товаров в категории"""
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        """Получаем товары категории через сервис с кешированием"""
+        category_id = self.kwargs.get('pk')
+        return ProductService.get_products_by_category(category_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs.get('pk')
+        category = get_object_or_404(Category, id=category_id)
+        context['category'] = category
+        context['title'] = f'Товары в категории "{category.name}"'
+        return context
+
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
-    """Создание продукта (только для авторизованных)"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
@@ -41,19 +68,12 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     login_url = '/users/login/'
 
     def form_valid(self, form):
-        """Автоматически назначаем владельца"""
         form.instance.owner = self.request.user
-        # Новый продукт по умолчанию не опубликован (is_published=False)
-        messages.success(self.request, f'Товар "{form.instance.name}" успешно создан! Он ожидает модерации.')
+        messages.success(self.request, f'Товар "{form.instance.name}" успешно создан!')
         return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
-        return super().form_invalid(form)
 
 
 class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """Редактирование продукта (только владелец или модератор)"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
@@ -61,66 +81,40 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     login_url = '/users/login/'
 
     def test_func(self):
-        """Проверка прав: владелец или модератор"""
         product = self.get_object()
         user = self.request.user
-
-        # Владелец может редактировать
-        if product.owner == user:
-            return True
-
-        # Модератор может редактировать
-        if user.has_perm('catalog.can_unpublish_product'):
-            return True
-
-        return False
-
-    def handle_no_permission(self):
-        messages.error(self.request, 'У вас нет прав для редактирования этого товара.')
-        return redirect('catalog:home')
+        return product.owner == user or user.has_perm('catalog.can_unpublish_product')
 
     def form_valid(self, form):
+        # Очищаем кеш при обновлении
+        ProductService.clear_product_cache(self.object.id)
         messages.success(self.request, f'Товар "{form.instance.name}" успешно обновлен!')
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
-        return super().form_invalid(form)
-
 
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Удаление продукта (владелец или модератор)"""
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
     login_url = '/users/login/'
 
     def test_func(self):
-        """Проверка прав: владелец или модератор"""
         product = self.get_object()
         user = self.request.user
-
-        # Владелец может удалить
-        if product.owner == user:
-            return True
-
-        # Модератор может удалить
-        if user.has_perm('catalog.can_unpublish_product'):
-            return True
-
-        return False
-
-    def handle_no_permission(self):
-        messages.error(self.request, 'У вас нет прав для удаления этого товара.')
-        return redirect('catalog:home')
+        return product.owner == user or user.has_perm('catalog.can_unpublish_product')
 
     def delete(self, request, *args, **kwargs):
-        messages.success(self.request, f'Товар "{self.get_object().name}" успешно удален!')
+        product = self.get_object()
+        product_name = product.name
+
+        # Очищаем кеш при удалении
+        ProductService.clear_product_cache(product.id)
+
+        messages.success(self.request, f'Товар "{product_name}" успешно удален!')
         return super().delete(request, *args, **kwargs)
 
 
 class ProductModerateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """Представление для модерации продукта (публикация/снятие с публикации)"""
     model = Product
     fields = ['is_published']
     template_name = 'catalog/product_moderate.html'
@@ -128,12 +122,14 @@ class ProductModerateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     login_url = '/users/login/'
 
     def test_func(self):
-        """Только модераторы могут управлять публикацией"""
         return self.request.user.has_perm('catalog.can_unpublish_product')
 
-    def handle_no_permission(self):
-        messages.error(self.request, 'У вас нет прав для модерации товаров.')
-        return redirect('catalog:home')
+    def form_valid(self, form):
+        # Очищаем кеш при изменении статуса публикации
+        ProductService.clear_product_cache(self.object.id)
+        ProductService.clear_category_cache(self.object.category.id)
+        messages.success(self.request, f'Статус публикации товара "{self.object.name}" обновлен!')
+        return super().form_valid(form)
 
 
 class ContactsView(TemplateView):
@@ -158,7 +154,6 @@ class ContactsView(TemplateView):
         context = self.get_context_data(**kwargs)
         context['success'] = True
         context['message'] = 'Ваше сообщение отправлено! Мы свяжемся с вами в ближайшее время.'
-
         return self.render_to_response(context)
 
 
