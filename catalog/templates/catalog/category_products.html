@@ -1,0 +1,83 @@
+{% extends 'catalog/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - SkyStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">🏠 Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">📂 {{ category.name }}</h1>
+        <p class="lead text-muted">{{ category.description|default:"Все товары в этой категории" }}</p>
+        <span class="badge bg-primary">{{ products|length }} товаров</span>
+    </div>
+
+    {% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="my-0 text-truncate fw-bold">{{ product.name }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="img-fluid rounded mb-2" style="max-height: 120px; object-fit: contain;" alt="{{ product.name }}">
+                    {% else %}
+                        <div class="py-3">
+                            <span style="font-size: 48px;">📱</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h2 class="card-title text-primary fw-bold mt-2">$ {{ product.price }}</h2>
+                    <p class="card-text text-secondary small">{{ product.description|truncatechars:80 }}</p>
+                    
+                    {% if product.is_published %}
+                        <span class="badge bg-success mb-2">✅ Опубликован</span>
+                    {% else %}
+                        <span class="badge bg-secondary mb-2">⏳ На модерации</span>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-primary w-100">
+                        🔍 Подробнее
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <p class="mb-0">📭 В этой категории пока нет товаров.</p>
+    </div>
+    {% endif %}
+
+    <!-- Кнопка назад -->
+    <div class="text-center mt-5">
+        <a href="{% url 'catalog:home' %}" class="btn btn-outline-secondary">
+            ← Назад к покупкам
+        </a>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'catalog/base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - SkyStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">📝 Регистрация нового пользователя</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Сообщения -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+                            
+                            {{ field }}
+                            
+                            {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {% for error in field.errors %}
+                                    <small><i class="bi bi-exclamation-triangle"></i> {{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'catalog:home' %}" class="btn btn-outline-secondary">
+                                ← На главную
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                ✅ Зарегистрироваться
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Уже есть аккаунт? 
+                            <a href="{% url 'users:login' %}" class="text-decoration-none">Войти</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Преимущества регистрации -->
+            <div class="card mt-4 bg-light">
+                <div class="card-body">
+                    <h6 class="mb-2">✨ Преимущества регистрации:</h6>
+                    <ul class="small text-muted mb-0">
+                        <li>📦 Управление своими товарами</li>
+                        <li>🛒 Добавление товаров в корзину</li>
+                        <li>⭐ Оставление отзывов</li>
+                        <li>📝 Участие в акциях</li>
+                        <li>🔔 Персональные рекомендации</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
